@@ -1,0 +1,40 @@
+---
+- hosts: webserver
+  become: true
+
+  tasks:
+
+    - name: Deploy Servian Postgres container
+      docker_container:
+        name: "servian-postgres"
+        image: "postgres:10.7"
+        state: started
+        ports:
+          - "5432:5432"
+      register: db_cont_metadata
+
+    - name: Wait for postgres to accept connections
+      wait_for:
+        host: '{{ db_cont_metadata["ansible_facts"]["docker_container"]["NetworkSettings"]["IPAddress"] }}'
+        port: 5432
+        state: drained
+        connect_timeout: 1
+        timeout: 30
+      register: postgres_running
+      until: postgres_running is success
+      retries: 10
+
+    - name: Deploy Database and Test Data onto Postgres container
+      docker_container: 
+        name: "servian-db-data"
+        image: "servian/techchallengeapp:latest"
+        command: "updatedb"
+        network_mode: host
+
+    - name: Deploy Servian web-app container
+      docker_container:
+        name: "servian-web"
+        image: "servian/techchallengeapp:latest"
+        command: "serve"
+        state: started
+        network_mode: host
