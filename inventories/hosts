@@ -6,8 +6,7 @@ ansible_connection=local
 ansible_python_interpreter=/usr/local/bin/python3
 
 [webserver]
-# ec2-54-206-2-26.ap-southeast-2.compute.amazonaws.com
-ec2-13-211-139-9.ap-southeast-2.compute.amazonaws.com
+<Public DNS goes here>
 
 [webserver:vars]
 ansible_python_interpreter=/bin/python3
